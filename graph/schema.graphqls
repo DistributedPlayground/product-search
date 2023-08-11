@@ -1,0 +1,25 @@
+# GraphQL schema example
+#
+# https://gqlgen.com/getting-started/
+
+type Collection {
+  id: ID!
+  name: String!
+  description: String!
+}
+
+type Product {
+  id: ID!
+  name: String!
+  description: String!
+  price: Float!
+  quantity: Int!
+  collection: Collection!
+}
+
+type Query {
+  collections: [Collection!]!
+  products: [Product!]!
+  collection(id: ID!): Collection!
+  product(id: ID!): Product!
+}
