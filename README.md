@@ -1,3 +1,2 @@
-# To use
-
-`go run github.com/99designs/gqlgen generate`
+# To Create GraphQL Code:
+`make generate`

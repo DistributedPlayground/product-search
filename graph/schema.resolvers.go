@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 
+	graph "github.com/DistributedPlayground/product-search/graph/api"
 	"github.com/DistributedPlayground/product-search/graph/model"
 )
 
@@ -31,7 +32,7 @@ func (r *queryResolver) Product(ctx context.Context, id string) (*model.Product,
 	panic(fmt.Errorf("not implemented: Product - product"))
 }
 
-// Query returns QueryResolver implementation.
-func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
+// Query returns graph.QueryResolver implementation.
+func (r *Resolver) Query() graph.QueryResolver { return &queryResolver{r} }
 
 type queryResolver struct{ *Resolver }

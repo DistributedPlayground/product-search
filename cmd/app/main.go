@@ -1,14 +1,16 @@
 package main
 
 import (
-	"context"
-	"time"
+	"log"
+	"net/http"
 
+	"github.com/99designs/gqlgen/graphql/handler"
+	"github.com/99designs/gqlgen/graphql/playground"
 	env "github.com/DistributedPlayground/go-lib/config"
+	"github.com/DistributedPlayground/product-search/graph"
+	gql_api "github.com/DistributedPlayground/product-search/graph/api"
+	"github.com/DistributedPlayground/product-search/pkg/store"
 	"github.com/DistributedPlayground/products/config"
-
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func main() {
@@ -16,12 +18,14 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
 
-	// TODO: connect to mongo in docker
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://localhost:27017"))
-	if err != nil {
-		panic(err)
-	}
+	db := store.MustNewMongo()
+	srv := handler.NewDefaultServer(gql_api.NewExecutableSchema(gql_api.Config{Resolvers: &graph.Resolver{}}))
+
+	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
+	http.Handle("/query", srv)
+
+	log.Printf("connect to http://localhost:%s/ for GraphQL playground", config.Var.PORT)
+	log.Fatal(http.ListenAndServe(":"+config.Var.PORT, nil))
+
 }

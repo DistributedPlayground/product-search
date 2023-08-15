@@ -3,16 +3,16 @@
 package model
 
 type Collection struct {
-	ID          string `json:"id"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
+	ID          string  `json:"id"`
+	Name        string  `json:"name"`
+	Description *string `json:"description,omitempty"`
 }
 
 type Product struct {
 	ID          string      `json:"id"`
 	Name        string      `json:"name"`
-	Description string      `json:"description"`
+	Description *string     `json:"description,omitempty"`
 	Price       float64     `json:"price"`
 	Quantity    int         `json:"quantity"`
-	Collection  *Collection `json:"collection"`
+	Collection  *Collection `json:"collection,omitempty"`
 }

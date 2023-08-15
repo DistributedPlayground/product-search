@@ -5,16 +5,16 @@
 type Collection {
   id: ID!
   name: String!
-  description: String!
+  description: String
 }
 
 type Product {
   id: ID!
   name: String!
-  description: String!
+  description: String
   price: Float!
   quantity: Int!
-  collection: Collection!
+  collection: Collection
 }
 
 type Query {
