@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 
-	"github.com/DistributedPlayground/product-search/config.go"
+	"github.com/DistributedPlayground/product-search/config"
 	"github.com/DistributedPlayground/product-search/graph/model"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
