@@ -10,6 +10,7 @@ type vars struct {
 	BASE_URL              string `required:"true"`
 	ENV                   string `required:"true"`
 	PORT                  string `required:"true"`
+	DB_NAME               string `required:"true"`
 	DB_USERNAME           string `required:"true"`
 	DB_PASSWORD           string `required:"true"`
 	DB_HOST               string `required:"true"`

@@ -6,30 +6,45 @@ package graph
 
 import (
 	"context"
-	"fmt"
 
 	graph "github.com/DistributedPlayground/product-search/graph/api"
 	"github.com/DistributedPlayground/product-search/graph/model"
 )
 
 // Collections is the resolver for the collections field.
-func (r *queryResolver) Collections(ctx context.Context) ([]*model.Collection, error) {
-	panic(fmt.Errorf("not implemented: Collections - collections"))
+func (r *queryResolver) Collections(ctx context.Context, limit *int, offset *int) ([]*model.Collection, error) {
+	collections, err := r.services.Collection.List(ctx, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	return collections, nil
 }
 
 // Products is the resolver for the products field.
-func (r *queryResolver) Products(ctx context.Context) ([]*model.Product, error) {
-	panic(fmt.Errorf("not implemented: Products - products"))
+func (r *queryResolver) Products(ctx context.Context, limit *int, offset *int) ([]*model.Product, error) {
+	products, err := r.services.Product.List(ctx, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	return products, nil
 }
 
 // Collection is the resolver for the collection field.
 func (r *queryResolver) Collection(ctx context.Context, id string) (*model.Collection, error) {
-	panic(fmt.Errorf("not implemented: Collection - collection"))
+	collection, err := r.services.Collection.GetById(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return collection, nil
 }
 
 // Product is the resolver for the product field.
 func (r *queryResolver) Product(ctx context.Context, id string) (*model.Product, error) {
-	panic(fmt.Errorf("not implemented: Product - product"))
+	product, err := r.services.Product.GetById(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return product, nil
 }
 
 // Query returns graph.QueryResolver implementation.

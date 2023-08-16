@@ -60,15 +60,15 @@ type ComplexityRoot struct {
 
 	Query struct {
 		Collection  func(childComplexity int, id string) int
-		Collections func(childComplexity int) int
+		Collections func(childComplexity int, limit *int, offset *int) int
 		Product     func(childComplexity int, id string) int
-		Products    func(childComplexity int) int
+		Products    func(childComplexity int, limit *int, offset *int) int
 	}
 }
 
 type QueryResolver interface {
-	Collections(ctx context.Context) ([]*model.Collection, error)
-	Products(ctx context.Context) ([]*model.Product, error)
+	Collections(ctx context.Context, limit *int, offset *int) ([]*model.Collection, error)
+	Products(ctx context.Context, limit *int, offset *int) ([]*model.Product, error)
 	Collection(ctx context.Context, id string) (*model.Collection, error)
 	Product(ctx context.Context, id string) (*model.Product, error)
 }
@@ -168,7 +168,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		return e.complexity.Query.Collections(childComplexity), true
+		args, err := ec.field_Query_collections_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Collections(childComplexity, args["limit"].(*int), args["offset"].(*int)), true
 
 	case "Query.product":
 		if e.complexity.Query.Product == nil {
@@ -187,7 +192,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		return e.complexity.Query.Products(childComplexity), true
+		args, err := ec.field_Query_products_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Products(childComplexity, args["limit"].(*int), args["offset"].(*int)), true
 
 	}
 	return 0, false
@@ -298,8 +308,8 @@ type Product {
 }
 
 type Query {
-  collections: [Collection!]!
-  products: [Product!]!
+  collections(limit: Int, offset: Int): [Collection!]!
+  products(limit: Int, offset: Int): [Product!]!
   collection(id: ID!): Collection!
   product(id: ID!): Product!
 }
@@ -341,6 +351,30 @@ func (ec *executionContext) field_Query_collection_args(ctx context.Context, raw
 	return args, nil
 }
 
+func (ec *executionContext) field_Query_collections_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *int
+	if tmp, ok := rawArgs["limit"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
+		arg0, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["limit"] = arg0
+	var arg1 *int
+	if tmp, ok := rawArgs["offset"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("offset"))
+		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["offset"] = arg1
+	return args, nil
+}
+
 func (ec *executionContext) field_Query_product_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -353,6 +387,30 @@ func (ec *executionContext) field_Query_product_args(ctx context.Context, rawArg
 		}
 	}
 	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_products_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *int
+	if tmp, ok := rawArgs["limit"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
+		arg0, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["limit"] = arg0
+	var arg1 *int
+	if tmp, ok := rawArgs["offset"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("offset"))
+		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["offset"] = arg1
 	return args, nil
 }
 
@@ -803,7 +861,7 @@ func (ec *executionContext) _Query_collections(ctx context.Context, field graphq
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Collections(rctx)
+		return ec.resolvers.Query().Collections(rctx, fc.Args["limit"].(*int), fc.Args["offset"].(*int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -838,6 +896,17 @@ func (ec *executionContext) fieldContext_Query_collections(ctx context.Context, 
 			return nil, fmt.Errorf("no field named %q was found under type Collection", field.Name)
 		},
 	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_collections_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
 	return fc, nil
 }
 
@@ -855,7 +924,7 @@ func (ec *executionContext) _Query_products(ctx context.Context, field graphql.C
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Products(rctx)
+		return ec.resolvers.Query().Products(rctx, fc.Args["limit"].(*int), fc.Args["offset"].(*int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -895,6 +964,17 @@ func (ec *executionContext) fieldContext_Query_products(ctx context.Context, fie
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Product", field.Name)
 		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_products_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
 	}
 	return fc, nil
 }
@@ -3984,6 +4064,22 @@ func (ec *executionContext) marshalOCollection2ᚖgithubᚗcomᚋDistributedPlay
 		return graphql.Null
 	}
 	return ec._Collection(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v interface{}) (*int, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalInt(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.SelectionSet, v *int) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	res := graphql.MarshalInt(*v)
+	return res
 }
 
 func (ec *executionContext) unmarshalOString2ᚖstring(ctx context.Context, v interface{}) (*string, error) {

@@ -18,8 +18,8 @@ type Product {
 }
 
 type Query {
-  collections: [Collection!]!
-  products: [Product!]!
+  collections(limit: Int, offset: Int): [Collection!]!
+  products(limit: Int, offset: Int): [Product!]!
   collection(id: ID!): Collection!
   product(id: ID!): Product!
 }
