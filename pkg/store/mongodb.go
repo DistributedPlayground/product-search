@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/DistributedPlayground/products/config"
+	"github.com/DistributedPlayground/product-search/config"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -13,21 +13,13 @@ import (
 var mongoClient *mongo.Client
 
 func mongoConnectionString() string {
-	var (
-		DBUser     = config.Var.DB_USERNAME
-		DBPassword = config.Var.DB_PASSWORD
-		DBName     = config.Var.DB_NAME
-		DBHost     = config.Var.DB_HOST
-		DBPort     = config.Var.DB_PORT
+	str := fmt.Sprintf("mongodb://%s:%s@%s:%s",
+		config.Var.DB_USERNAME,
+		config.Var.DB_PASSWORD,
+		config.Var.DB_HOST,
+		config.Var.DB_PORT,
 	)
-
-	str := fmt.Sprintf("mongodb://%s:%s@%s:%s/%s",
-		DBUser,
-		DBPassword,
-		DBHost,
-		DBPort,
-		DBName,
-	)
+	fmt.Println(str)
 
 	return str
 }
