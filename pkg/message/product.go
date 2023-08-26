@@ -2,34 +2,32 @@ package message
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 )
 
-type Collection interface {
+type Product interface {
 	Listen() error
 }
 
-type collection struct {
+type product struct {
 	kc    *kafka.Consumer
 	topic string
 }
 
-func NewCollection(kc *kafka.Consumer) Collection {
-	return &collection{kc: kc, topic: "collection"}
+func NewProduct(kc *kafka.Consumer) Product {
+	return &product{kc: kc, topic: "product"}
 }
-func (c collection) Listen() error {
+func (p product) Listen() error {
 	// subscribe to a topic
-	err := c.kc.Subscribe(c.topic, nil)
+	err := p.kc.Subscribe(p.topic, nil)
 	if err != nil {
 		panic("Failed to subscribe to topic: " + err.Error())
-		os.Exit(1)
 	}
 
 	// continuously poll for new messages
 	for {
-		msg, err := c.kc.ReadMessage(-1)
+		msg, err := p.kc.ReadMessage(-1)
 		if err != nil {
 			// handle error
 			fmt.Printf("Error reading message: %s\n", err)
