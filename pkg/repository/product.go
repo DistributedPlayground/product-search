@@ -13,6 +13,9 @@ import (
 type Product interface {
 	GetById(ctx context.Context, id string) (*model.Product, error)
 	List(ctx context.Context, filter bson.M, opts ...*options.FindOptions) ([]*model.Product, error)
+	InsertOne(ctx context.Context, product *model.Product) (*mongo.InsertOneResult, error)
+	UpdateOne(ctx context.Context, filter bson.M, update bson.M) (*mongo.UpdateResult, error)
+	DeleteOne(ctx context.Context, filter bson.M) (*mongo.DeleteResult, error)
 }
 
 type product[T any] struct {

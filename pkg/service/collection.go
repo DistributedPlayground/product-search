@@ -6,6 +6,7 @@ import (
 	"github.com/DistributedPlayground/product-search/graph/model"
 	"github.com/DistributedPlayground/product-search/pkg/repository"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -40,4 +41,32 @@ func (c *collection) List(ctx context.Context, limit *int, offset *int) (collect
 		return collections, err
 	}
 	return collections, nil
+}
+
+func (c *collection) Insert(ctx context.Context, collection *model.Collection) (res *mongo.InsertOneResult, err error) {
+	res, err = c.repo.InsertOne(ctx, collection)
+	if err != nil {
+		return res, err
+	} else {
+		return res, nil
+	}
+}
+
+func (c *collection) Update(ctx context.Context, collection *model.Collection) (res *mongo.UpdateResult, err error) {
+	res, err = c.repo.UpdateOne(ctx, bson.M{"id": collection.ID}, bson.M{"name": collection.Name, "description": collection.Description})
+	if err != nil {
+		return res, err
+	} else {
+		return res, nil
+	}
+}
+
+// delete collection
+func (c *collection) Delete(ctx context.Context, collection *model.Collection) (res *mongo.DeleteResult, err error) {
+	res, err = c.repo.DeleteOne(ctx, bson.M{"id": collection.ID})
+	if err != nil {
+		return res, err
+	} else {
+		return res, nil
+	}
 }

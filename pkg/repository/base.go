@@ -105,3 +105,29 @@ func (b Base[T]) Distinct(ctx context.Context, fieldName string, filter bson.M) 
 	}
 	return values, nil
 }
+
+// Writes
+
+func (b Base[T]) InsertOne(ctx context.Context, document *T) (*mongo.InsertOneResult, error) {
+	return b.Collection.InsertOne(ctx, document)
+}
+
+func (b Base[T]) InsertMany(ctx context.Context, documents []interface{}) (*mongo.InsertManyResult, error) {
+	return b.Collection.InsertMany(ctx, documents)
+}
+
+func (b Base[T]) UpdateOne(ctx context.Context, filter bson.M, update bson.M) (*mongo.UpdateResult, error) {
+	return b.Collection.UpdateOne(ctx, filter, update)
+}
+
+func (b Base[T]) UpdateMany(ctx context.Context, filter bson.M, update bson.M) (*mongo.UpdateResult, error) {
+	return b.Collection.UpdateMany(ctx, filter, update)
+}
+
+func (b Base[T]) DeleteOne(ctx context.Context, filter bson.M) (*mongo.DeleteResult, error) {
+	return b.Collection.DeleteOne(ctx, filter)
+}
+
+func (b Base[T]) DeleteMany(ctx context.Context, filter bson.M) (*mongo.DeleteResult, error) {
+	return b.Collection.DeleteMany(ctx, filter)
+}

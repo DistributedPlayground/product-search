@@ -10,6 +10,7 @@ import (
 	"github.com/DistributedPlayground/product-search/config"
 	"github.com/DistributedPlayground/product-search/graph"
 	gql_api "github.com/DistributedPlayground/product-search/graph/api"
+	"github.com/DistributedPlayground/product-search/pkg/message"
 	"github.com/DistributedPlayground/product-search/pkg/repository"
 	"github.com/DistributedPlayground/product-search/pkg/service"
 	"github.com/DistributedPlayground/product-search/pkg/store"
@@ -23,6 +24,14 @@ func main() {
 
 	db := store.MustNewMongo()
 	defer db.Disconnect(nil)
+
+	kc := store.MustNewKafka()
+	defer kc.Close()
+
+	messages := message.NewMessages(kc)
+	go messages.Collection.Listen()
+	go messages.Product.Listen()
+
 	repos := repository.NewRepos(db)
 	services := service.NewServices(repos)
 	resovler := graph.NewResolver(services)
