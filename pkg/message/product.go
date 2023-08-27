@@ -1,9 +1,14 @@
 package message
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
 
+	"github.com/DistributedPlayground/product-search/graph/model"
+	"github.com/DistributedPlayground/product-search/pkg/repository"
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 type Product interface {
@@ -12,13 +17,16 @@ type Product interface {
 
 type product struct {
 	kc    *kafka.Consumer
+	repo  repository.Product
 	topic string
 }
 
-func NewProduct(kc *kafka.Consumer) Product {
-	return &product{kc: kc, topic: "product"}
+func NewProduct(kc *kafka.Consumer, repo repository.Product) Product {
+	return &product{kc: kc, repo: repo, topic: "product"}
 }
 func (p product) Listen() error {
+	ctx := context.Background()
+
 	// subscribe to a topic
 	err := p.kc.Subscribe(p.topic, nil)
 	if err != nil {
@@ -34,8 +42,27 @@ func (p product) Listen() error {
 			continue
 		}
 
+		product := model.Product{}
+		err = json.Unmarshal(msg.Value, &product)
+		if err != nil {
+			fmt.Printf("Error unmarshalling message: %s\n", err)
+			continue
+		}
 		// process the message
 		fmt.Printf("Received message: %s\n", string(msg.Value))
-		// ... take action based on the message
+		for _, header := range msg.Headers {
+			if string(header.Key) == "MessageType" {
+				switch string(header.Value) {
+				case "Create":
+					p.repo.InsertOne(ctx, &product)
+				case "Update":
+					p.repo.UpdateOne(ctx, bson.M{"id": product.ID}, bson.M{"$set": product})
+				case "Delete":
+					fmt.Println("Delete")
+				default:
+					fmt.Println("Unknown")
+				}
+			}
+		}
 	}
 }

@@ -1,9 +1,14 @@
 package message
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
 
+	"github.com/DistributedPlayground/product-search/graph/model"
+	"github.com/DistributedPlayground/product-search/pkg/repository"
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 type Collection interface {
@@ -12,13 +17,16 @@ type Collection interface {
 
 type collection struct {
 	kc    *kafka.Consumer
+	repo  repository.Collection
 	topic string
 }
 
-func NewCollection(kc *kafka.Consumer) Collection {
-	return &collection{kc: kc, topic: "collection"}
+func NewCollection(kc *kafka.Consumer, repo repository.Collection) Collection {
+	return &collection{kc: kc, repo: repo, topic: "collection"}
 }
 func (c collection) Listen() error {
+	ctx := context.Background()
+
 	// subscribe to a topic
 	err := c.kc.Subscribe(c.topic, nil)
 	if err != nil {
@@ -34,8 +42,28 @@ func (c collection) Listen() error {
 			continue
 		}
 
+		collection := model.Collection{}
+		err = json.Unmarshal(msg.Value, &collection)
+		if err != nil {
+			fmt.Printf("Error unmarshalling message: %s\n", err)
+			continue
+		}
+
 		// process the message
 		fmt.Printf("Received message: %s\n", string(msg.Value))
-		// ... take action based on the message
+		for _, header := range msg.Headers {
+			if string(header.Key) == "MessageType" {
+				switch string(header.Value) {
+				case "Create":
+					c.repo.InsertOne(ctx, &collection)
+				case "Update":
+					c.repo.UpdateOne(ctx, bson.M{"id": collection.ID}, bson.M{"$set": collection})
+				case "Delete":
+					fmt.Println("Delete")
+				default:
+					fmt.Println("Unknown")
+				}
+			}
+		}
 	}
 }

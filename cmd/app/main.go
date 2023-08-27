@@ -25,14 +25,15 @@ func main() {
 	db := store.MustNewMongo()
 	defer db.Disconnect(nil)
 
+	repos := repository.NewRepos(db)
+
 	kc := store.MustNewKafka()
 	defer kc.Close()
 
-	messages := message.NewMessages(kc)
+	messages := message.NewMessages(kc, repos)
 	go messages.Collection.Listen()
 	go messages.Product.Listen()
 
-	repos := repository.NewRepos(db)
 	services := service.NewServices(repos)
 	resovler := graph.NewResolver(services)
 	srv := handler.NewDefaultServer(gql_api.NewExecutableSchema(gql_api.Config{Resolvers: resovler}))
